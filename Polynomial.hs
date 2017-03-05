@@ -4,7 +4,8 @@ module Polynomial(Polynomial,
                   deg, tryMonicize,
                   lcof, isPos,
                   deleteLcof,
-                  plus, times) where
+                  plus, times,
+                  lexOrder) where
 
 import Data.List as L
 import Data.Map as M
@@ -17,6 +18,21 @@ data Monomial = Monomial Rational (Map String Integer)
 
 mkMono :: Rational -> [(String, Integer)] -> Monomial
 mkMono i vars = Monomial i (M.fromList $ L.filter (\(_, c) -> c /= 0) vars)
+
+lexOrderStrings :: [(String, Integer)] -> [(String, Integer)] -> Ordering
+lexOrderStrings [] [] = EQ
+lexOrderStrings ((a, an):as) ((b, bn):bs) =
+  if a == b then
+    if an == bn then
+      lexOrderStrings as bs
+    else compare an bn
+  else compare a b
+
+lexOrder :: Monomial -> Monomial -> Ordering
+lexOrder (Monomial _ a) (Monomial _ b) =
+  let aVals = sortBy (\(a, _) (b, _) -> compare a b) $ M.toList a
+      bVals = sortBy (\(a, _) (b, _) -> compare a b) $ M.toList b in
+   lexOrderStrings aVals bVals
 
 mkMonoMap i vars = Monomial i (M.filter (\c -> c /= 0) vars)
 
@@ -127,6 +143,7 @@ deg var (Polynomial ts) =
   if length ts == 0
   then 0
   else L.maximum $ S.toList $ S.map (\m -> monoDegree var m) ts
+
 
 -- pseudoRemainder :: String -> Polynomial -> Polynomial -> Polynomial
 -- pseudoRemainder s f g =

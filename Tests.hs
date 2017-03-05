@@ -20,6 +20,21 @@ main = hspec $ do
        (mkPoly [mkMono 5 [("x", 3), ("y", 4)]])) `shouldBe`
         (mkPoly [mkMono 7 [("x", 3), ("y", 4)]])
 
+  describe "Lexicographic order" $ do
+    it "x less than y" $ do
+      let a = mkMono 2 [("x", 3)]
+          b = mkMono 2 [("y", 4)] in
+       lexOrder a b `shouldBe` LT
+
+    it "y greater than x" $ do
+      let a = mkMono 5 [("x", 3)]
+          b = mkMono (-2) [("y", 4)] in
+       lexOrder b a `shouldBe` GT
+
+    it "x equal to x" $ do
+      let a = mkMono 5 [("x", 2)]
+          b = mkMono 2 [("x", 2)] in
+       lexOrder a b `shouldBe` EQ
   describe "Leading coefficient" $ do
     it "Univariate, one term" $ do
       (lcof "x" $ mkPoly [mkMono 3 [("x", 4)]]) `shouldBe` mkPoly [mkMono 3 []]
