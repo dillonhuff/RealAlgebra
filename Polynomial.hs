@@ -10,6 +10,7 @@ module Polynomial(Polynomial,
 
 import Data.List as L
 import Data.Map as M
+import Data.Maybe as Mb
 import Data.Set as S
 
 import PrettyPrint
@@ -275,13 +276,33 @@ reduceState monomialOrder ds@(DivState r (a:as) (f:fs)) =
      Just q -> Just $ DivState (minus r (times (mkPoly [q]) f)) ((plus a (mkPoly [q])):as) (f:fs)
      Nothing -> Nothing
 
+type MonomialOrder = Monomial -> Monomial -> Ordering
+
+dropUnreducible :: MonomialOrder -> DivState -> [Polynomial]
+dropUnreducible monomialOrder (DivState r as fs) =
+  if isZero r then []
+  else 
+    dropWhile (\f -> ((monoQuotient (lt monomialOrder f) (lt monomialOrder r)) ) == Nothing) fs
+
 rDivide :: (Monomial -> Monomial -> Ordering) ->
            DivState ->
            ([Polynomial], Polynomial)
 rDivide monomialOrder ds@(DivState r as fs) =
-  case reduceState monomialOrder ds of
-   Nothing -> (as, r)
-   Just newDs -> rDivide monomialOrder newDs
+  case dropUnreducible monomialOrder ds of
+   [] -> (as, r)
+   earlier ->
+     let ak = head $ drop (length earlier) as
+         fk = head $ drop (length earlier) fs
+         q = fromJust $ monoQuotient (lt monomialOrder fk) (lt monomialOrder r)
+         newA = plus ak (mkPoly [q])
+         newR = minus r (times (mkPoly [q]) fk)
+         lastA = drop ((length earlier) + 1) as
+         prevA = take (length earlier) as in
+      rDivide monomialOrder (DivState newR (prevA ++ [newA] ++ lastA) fs)
+      
+  -- case reduceState monomialOrder ds of
+  --  Nothing -> (as, r)
+  --  Just newDs -> rDivide monomialOrder newDs
   -- let maybeReducer = findReducer monomialOrder (lt monomialOrder r) fs in
   --  case maybeReducer of
   --   Nothing -> (as, r)
