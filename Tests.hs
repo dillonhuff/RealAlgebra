@@ -70,3 +70,5 @@ main = hspec $ do
       let x = mkPoly $ [mkMono 1 [("x", 1)]]
           x2 = mkPoly $ [mkMono 2 [("x", 2), ("y", 1)]] in
        divide lexOrder x2 [x] `shouldBe` ([mkPoly [mkMono 2 [("x", 1), ("y", 1)] ] ], mkCon 0)
+
+-- TODO: Add some randomized tests with QuickCheck

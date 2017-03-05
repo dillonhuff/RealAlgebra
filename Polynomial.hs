@@ -150,45 +150,6 @@ deg var (Polynomial ts) =
   then 0
   else L.maximum $ S.toList $ S.map (\m -> monoDegree var m) ts
 
-
--- pseudoRemainder :: String -> Polynomial -> Polynomial -> Polynomial
--- pseudoRemainder s f g =
---   let (_, _, r) = pseudoDivide s f g in
---    r
-
--- pseudoDivide :: String -> Polynomial -> Polynomial -> (Polynomial, Polynomial, Polynomial)
--- pseudoDivide var f g =
---   let b = pow (lcof var g) (L.maximum [(deg var f) - (deg var g) + 1, 0])
---       (q, r) = rdivide var (times b f) g zero in
---   (b, q, r)
-
--- divEven f g = do
---   (q, r) <- divP f g
---   case r == zero of
---    True -> return q
---    False -> Nothing
-
--- divP :: Polynomial -> Polynomial -> Maybe (Polynomial, Polynomial)
--- divP f g =
---   case nextVar f g of
---    Just v -> divide v f g
---    Nothing -> do
---      q <- intDiv f g
---      return (q, zero)
-
-
--- divide :: String -> Polynomial -> Polynomial -> Maybe (Polynomial, Polynomial)
--- divide var f g =
---   case g == zero of
---    True -> Nothing
---    False -> Just $ rdivide var f g zero
-
--- divideEvenly var f g = do
---   (q, r) <- divide var f g
---   case r == zero of
---    True -> return q
---    False -> Nothing
-
 varSet (Polynomial ts) = S.unions $ L.map vars $ S.toList ts
 
 nextVar f g =
@@ -266,9 +227,6 @@ dropUnreducible monomialOrder (DivState r _ fs) =
     let reduces = \f -> ((monoQuotient (lt monomialOrder f) (lt monomialOrder r))) /= Nothing
         reduceInd = L.findIndex reduces fs in
      reduceInd
-     -- case reduceInd of
-     --  Nothing -> Nothing
-     --  Just i -> Just i--if i == 0 then Just [] else Just $ take (i - 1) fs
 
 rDivide :: (Monomial -> Monomial -> Ordering) ->
            DivState ->
@@ -277,13 +235,13 @@ rDivide monomialOrder ds@(DivState r as fs) =
   case dropUnreducible monomialOrder ds of
    Nothing -> (as, r)
    Just i ->
-     let ak = head $ drop i as --(length earlier) as
-         fk = head $ drop i fs --(length earlier) fs
+     let ak = head $ drop i as
+         fk = head $ drop i fs
          q = fromJust $ monoQuotient (lt monomialOrder fk) (lt monomialOrder r)
          newA = plus ak (mkPoly [q])
          newR = minus r (times (mkPoly [q]) fk)
-         lastA = drop (i + 1) as --((length earlier) + 1) as
-         oldA = take i as in --(length earlier) as in
+         lastA = drop (i + 1) as
+         oldA = take i as in
       (oldA ++ [newA] ++ lastA, newR)
 
    
