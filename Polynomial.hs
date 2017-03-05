@@ -1,9 +1,10 @@
 module Polynomial(Polynomial,
+                  Monomial,
                   mkCon, mkPoly, mkMono, one, zero,
                   isCon, getCon,
                   deg, tryMonicize,
                   lcof, isPos,
-                  deleteLcof,
+                  deleteLcof, monoQuotient,
                   plus, times, divide,
                   lexOrder) where
 
@@ -222,11 +223,31 @@ lt monomialOrder (Polynomial s) = head $ sortBy monomialOrder $ S.toList s
 data DivState = DivState Polynomial [Polynomial] [Polynomial]
                 deriving (Eq, Ord, Show)
 
+-- mergeDivState :: Polynomial ->
+--                  Polynomial ->
+--                  Polynomial ->
+--                  [Polynomial] ->
+--                  [Polynomial] ->
+--                  Maybe DivState ->
+--                  DivState
+-- mergeDivState _ a f _ _ (Just (DivState r as fs)) = Just $ DivState r ([a] ++ as) ([f] ++ fs)
+-- mergeDivState r a f as fs Nothing = DivState
+
+monoQuotient :: Monomial -> Monomial -> Maybe Monomial
+monoQuotient a b =
+  let ac = monoCoeff a
+      bc = monoCoeff b in
+   Just $ mkMono (bc / ac) []
+
 reduceState :: (Monomial -> Monomial -> Ordering) ->
                DivState ->
                Maybe DivState
-reduceState monomialOrder (DivState r as fs) =
+reduceState monomialOrder (DivState r [] []) =
   Nothing
+reduceState monomialOrder (DivState r (a:as) (f:fs)) =
+  case monoQuotient (lt monomialOrder f) (lt monomialOrder r) of
+   Just q -> Just $ DivState (minus r (times (mkPoly [q]) f)) ((plus a (mkPoly [q])):as) (f:fs)
+   Nothing -> Nothing
 
 rDivide :: (Monomial -> Monomial -> Ordering) ->
            DivState ->

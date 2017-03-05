@@ -47,60 +47,27 @@ main = hspec $ do
        lexOrder b a `shouldBe` LT
 
   describe "Multipolynomial division" $ do
-    it "x divides x^2" $ do
-      let x = mkPoly $ [mkMono 1 [("x", 1)]]
-          x2 = mkPoly $ [mkMono 1 [("x", 2)]] in
-       divide lexOrder x2 [x] `shouldBe` ([x], mkCon 0)
+    -- it "x divides x^2" $ do
+    --   let x = mkPoly $ [mkMono 1 [("x", 1)]]
+    --       x2 = mkPoly $ [mkMono 1 [("x", 2)]] in
+    --    divide lexOrder x2 [x] `shouldBe` ([x], mkCon 0)
 
-    it "x divides 2 * x^2 * y" $ do
-      let x = mkPoly $ [mkMono 1 [("x", 1)]]
-          x2 = mkPoly $ [mkMono 2 [("x", 2), ("y", 1)]] in
-       divide lexOrder x2 [x] `shouldBe` ([mkPoly [mkMono 2 [("x", 1), ("y", 1)] ] ], mkCon 0)
+    -- it "x divides 2 * x^2 * y" $ do
+    --   let x = mkPoly $ [mkMono 1 [("x", 1)]]
+    --       x2 = mkPoly $ [mkMono 2 [("x", 2), ("y", 1)]] in
+    --    divide lexOrder x2 [x] `shouldBe` ([mkPoly [mkMono 2 [("x", 1), ("y", 1)] ] ], mkCon 0)
 
-  describe "Leading coefficient" $ do
-    it "Univariate, one term" $ do
-      (lcof "x" $ mkPoly [mkMono 3 [("x", 4)]]) `shouldBe` mkPoly [mkMono 3 []]
+  describe "Monomial division" $ do
+    it "2x | 6x is 3" $ do
+      monoQuotient (mkMono 2 [("x", 1)]) (mkMono 6 [("x", 1)]) `shouldBe` (Just $ mkMono 3 [])
 
-    it "Multivariate, a few terms" $ do
-    (lcof "x" $ mkPoly [mkMono 3 [("x", 4), ("z", 2)],
-                        mkMono (-4) [("x", 2), ("y", 3)]])
-      `shouldBe`
-      (mkPoly [mkMono 3 [("z", 2)]])
+  -- describe "Leading coefficient" $ do
+  --   it "Univariate, one term" $ do
+  --     (lcof "x" $ mkPoly [mkMono 3 [("x", 4)]]) `shouldBe` mkPoly [mkMono 3 []]
 
-  -- describe "List division" $ do
-  --   it "Example from Holdender" $ do
-  --     1 `shouldBe` 1
-
-  -- describe "Division" $ do
-  --   it "Two univariate polynomials" $ do
-  --     divide "x" (mkPoly [mkMono 4 [("x", 2)]]) (mkPoly [mkMono 1 [("x", 1)]])
+  --   it "Multivariate, a few terms" $ do
+  --   (lcof "x" $ mkPoly [mkMono 3 [("x", 4), ("z", 2)],
+  --                       mkMono (-4) [("x", 2), ("y", 3)]])
   --     `shouldBe`
-  --     Just (mkPoly [mkMono 4 [("x", 1)]], zero)
+  --     (mkPoly [mkMono 3 [("z", 2)]])
 
-  -- describe "Pseudo division" $ do
-
-  --   it "deg(f) > deg(g)" $ do
-  --     let f = mkPoly [mkMono 1 [("x", 2)], mkMono 1 [("y", 2)]]
-  --         g = mkPoly [mkMono 1 [("x", 7)], mkMono (-1) [("y", 1)]] in
-  --      pseudoDivide "x" f g `shouldBe` (one, zero, f)
-
-  --   it "Multivariate, b != 1, no remainder" $ do
-  --     let f = mkPoly [mkMono 9 [("z", 5), ("x", 2), ("y", 2), ("w", 4)]]
-  --         g = mkPoly [mkMono 2 [("z", 1), ("x", 2), ("y", 1)]]
-  --         (b, q, r) = pseudoDivide "z" f g in
-  --      (times b f) `shouldBe` (plus (times q g) r)
-
-  --   it "with remainder" $ do
-  --     let f = mkPoly [mkMono 1 [("x", 2)], mkMono 1 [("y", 2)]]
-  --         g = mkPoly [mkMono 1 [("x", 1)], mkMono (-1) [("y", 1)]]
-  --         q = mkPoly [mkMono 1 [("x", 1)], mkMono 1 [("y", 1)]]
-  --         r = mkPoly [mkMono 2 [("y", 2)]] in
-  --      pseudoDivide "x" f g `shouldBe` (one, q, r)
-
-  -- describe "Derivative" $ do
-
-  --   it "Multivariate polynomial" $ do
-  --     let f = mkPoly [mkMono 9 [("z", 5), ("x", 2), ("y", 2), ("w", 4)],
-  --                     mkMono 2 [("z", 1), ("x", 2), ("y", 1)]]
-  --         fp = mkPoly [mkMono 36 [("z", 5), ("x", 2), ("y", 2), ("w", 3)]] in
-  --      derivative "w" f `shouldBe` fp
