@@ -61,6 +61,9 @@ main = hspec $ do
     it "2x | 6x is 3" $ do
       monoQuotient (mkMono 2 [("x", 1)]) (mkMono 6 [("x", 1)]) `shouldBe` (Just $ mkMono 3 [])
 
+    it "3*x^2 does not divide 3*x^1" $ do
+      monoQuotient (mkMono 3 [("x", 2)]) (mkMono 3 [("x", 1)]) `shouldBe` Nothing
+
   -- describe "Leading coefficient" $ do
   --   it "Univariate, one term" $ do
   --     (lcof "x" $ mkPoly [mkMono 3 [("x", 4)]]) `shouldBe` mkPoly [mkMono 3 []]

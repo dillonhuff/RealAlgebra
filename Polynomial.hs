@@ -59,6 +59,7 @@ deleteVar x (Monomial c vars) = mkMonoMap c $ M.delete x vars
 setMonoDegree var d (Monomial c vars) =
   mkMonoMap c $ M.insert var d vars
 
+monoDegree :: String -> Monomial -> Integer
 monoDegree var (Monomial _ vars) =
   case M.lookup var vars of
    Just d -> d
@@ -233,11 +234,32 @@ data DivState = DivState Polynomial [Polynomial] [Polynomial]
 -- mergeDivState _ a f _ _ (Just (DivState r as fs)) = Just $ DivState r ([a] ++ as) ([f] ++ fs)
 -- mergeDivState r a f as fs Nothing = DivState
 
+appendNextVar :: Monomial ->
+                 Monomial ->
+                 String ->
+                 Maybe [(String, Integer)] ->
+                 Maybe [(String, Integer)]
+appendNextVar _ _ _ Nothing = Nothing
+appendNextVar divisor dividend var (Just varList) =
+  let aDeg = monoDegree var divisor
+      bDeg = monoDegree var dividend in
+   if aDeg > bDeg then Nothing
+   else Just $ (var, bDeg - aDeg):varList
+
+quotientPowers :: Monomial -> Monomial -> Maybe [(String, Integer)]
+quotientPowers divisor dividend =
+  let allVars = S.toList $ S.union (vars divisor) (vars dividend) in
+   L.foldr (appendNextVar divisor dividend) (Just []) allVars
+
 monoQuotient :: Monomial -> Monomial -> Maybe Monomial
-monoQuotient a b =
-  let ac = monoCoeff a
-      bc = monoCoeff b in
-   Just $ mkMono (bc / ac) []
+monoQuotient divisor dividend =
+  let ac = monoCoeff divisor
+      bc = monoCoeff dividend
+      c = bc / ac
+      varPowsM = quotientPowers divisor dividend in
+   case varPowsM of
+    Just varPows -> Just $ mkMono c varPows
+    Nothing -> Nothing
 
 reduceState :: (Monomial -> Monomial -> Ordering) ->
                DivState ->
