@@ -230,16 +230,6 @@ lt monomialOrder (Polynomial s) =
 data DivState = DivState Polynomial [Polynomial] [Polynomial]
                 deriving (Eq, Ord, Show)
 
--- mergeDivState :: Polynomial ->
---                  Polynomial ->
---                  Polynomial ->
---                  [Polynomial] ->
---                  [Polynomial] ->
---                  Maybe DivState ->
---                  DivState
--- mergeDivState _ a f _ _ (Just (DivState r as fs)) = Just $ DivState r ([a] ++ as) ([f] ++ fs)
--- mergeDivState r a f as fs Nothing = DivState
-
 appendNextVar :: Monomial ->
                  Monomial ->
                  String ->
@@ -269,16 +259,16 @@ monoQuotient divisor dividend =
 
 type MonomialOrder = Monomial -> Monomial -> Ordering
 
-dropUnreducible :: MonomialOrder -> DivState -> Maybe [Polynomial]
+dropUnreducible :: MonomialOrder -> DivState -> Maybe Int
 dropUnreducible monomialOrder (DivState r _ fs) =
   if isZero r then Nothing
   else
     let reduces = \f -> ((monoQuotient (lt monomialOrder f) (lt monomialOrder r))) /= Nothing
         reduceInd = L.findIndex reduces fs in
-     case reduceInd of
-      Nothing -> Nothing
-      Just i -> if i == 0 then Just [] else Just $ take (i - 1) fs
-    --takeWhile (\f -> ((monoQuotient (lt monomialOrder f) (lt monomialOrder r)) ) == Nothing) fs
+     reduceInd
+     -- case reduceInd of
+     --  Nothing -> Nothing
+     --  Just i -> Just i--if i == 0 then Just [] else Just $ take (i - 1) fs
 
 rDivide :: (Monomial -> Monomial -> Ordering) ->
            DivState ->
@@ -286,23 +276,15 @@ rDivide :: (Monomial -> Monomial -> Ordering) ->
 rDivide monomialOrder ds@(DivState r as fs) =
   case dropUnreducible monomialOrder ds of
    Nothing -> (as, r)
-   Just earlier ->
-     let ak = head $ drop (length earlier) as
-         fk = head $ drop (length earlier) fs
+   Just i ->
+     let ak = head $ drop i as --(length earlier) as
+         fk = head $ drop i fs --(length earlier) fs
          q = fromJust $ monoQuotient (lt monomialOrder fk) (lt monomialOrder r)
          newA = plus ak (mkPoly [q])
          newR = minus r (times (mkPoly [q]) fk)
-         lastA = drop ((length earlier) + 1) as
-         oldA = take (length earlier) as in
-      (oldA ++ [newA] ++ lastA, newR) --rDivide monomialOrder (DivState newR (earlier ++ [newA] ++ lastA) fs)
-      
-  -- case reduceState monomialOrder ds of
-  --  Nothing -> (as, r)
-  --  Just newDs -> rDivide monomialOrder newDs
-  -- let maybeReducer = findReducer monomialOrder (lt monomialOrder r) fs in
-  --  case maybeReducer of
-  --   Nothing -> (as, r)
-  --   _ -> (as, r)
+         lastA = drop (i + 1) as --((length earlier) + 1) as
+         oldA = take i as in --(length earlier) as in
+      (oldA ++ [newA] ++ lastA, newR)
 
    
 x = mkPoly $ [mkMono 1 [("x", 1)]]
