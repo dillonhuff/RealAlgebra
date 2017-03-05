@@ -46,17 +46,6 @@ main = hspec $ do
           b = mkMono 2 [] in
        lexOrder b a `shouldBe` LT
 
-  describe "Multipolynomial division" $ do
-    -- it "x divides x^2" $ do
-    --   let x = mkPoly $ [mkMono 1 [("x", 1)]]
-    --       x2 = mkPoly $ [mkMono 1 [("x", 2)]] in
-    --    divide lexOrder x2 [x] `shouldBe` ([x], mkCon 0)
-
-    -- it "x divides 2 * x^2 * y" $ do
-    --   let x = mkPoly $ [mkMono 1 [("x", 1)]]
-    --       x2 = mkPoly $ [mkMono 2 [("x", 2), ("y", 1)]] in
-    --    divide lexOrder x2 [x] `shouldBe` ([mkPoly [mkMono 2 [("x", 1), ("y", 1)] ] ], mkCon 0)
-
   describe "Monomial division" $ do
     it "2x | 6x is 3" $ do
       monoQuotient (mkMono 2 [("x", 1)]) (mkMono 6 [("x", 1)]) `shouldBe` (Just $ mkMono 3 [])
@@ -64,13 +53,16 @@ main = hspec $ do
     it "3*x^2 does not divide 3*x^1" $ do
       monoQuotient (mkMono 3 [("x", 2)]) (mkMono 3 [("x", 1)]) `shouldBe` Nothing
 
-  -- describe "Leading coefficient" $ do
-  --   it "Univariate, one term" $ do
-  --     (lcof "x" $ mkPoly [mkMono 3 [("x", 4)]]) `shouldBe` mkPoly [mkMono 3 []]
+    it "4 * a^3 * b^1 * d^4 * z^8 divides 3 * a^5 * b^2 * c^3 * d^4 * z^12" $ do
+      monoQuotient (mkMono 4 [("a", 3), ("b", 1), ("d", 4), ("z", 8)]) (mkMono 3 [("a", 5), ("b", 2), ("c", 3), ("d", 4), ("z", 12)]) `shouldBe` (Just $ mkMono (3 / 4) [("a", 2), ("b", 1), ("c", 3), ("z", 4)])
+      
+  describe "Multipolynomial division" $ do
+    it "x divides x^2" $ do
+      let x = mkPoly $ [mkMono 1 [("x", 1)]]
+          x2 = mkPoly $ [mkMono 1 [("x", 2)]] in
+       divide lexOrder x2 [x] `shouldBe` ([x], mkCon 0)
 
-  --   it "Multivariate, a few terms" $ do
-  --   (lcof "x" $ mkPoly [mkMono 3 [("x", 4), ("z", 2)],
-  --                       mkMono (-4) [("x", 2), ("y", 3)]])
-  --     `shouldBe`
-  --     (mkPoly [mkMono 3 [("z", 2)]])
-
+    it "x divides 2 * x^2 * y" $ do
+      let x = mkPoly $ [mkMono 1 [("x", 1)]]
+          x2 = mkPoly $ [mkMono 2 [("x", 2), ("y", 1)]] in
+       divide lexOrder x2 [x] `shouldBe` ([mkPoly [mkMono 2 [("x", 1), ("y", 1)] ] ], mkCon 0)

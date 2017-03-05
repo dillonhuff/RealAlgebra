@@ -201,6 +201,8 @@ getCon p@(Polynomial m) =
   then 0
   else monoCoeff $ S.findMax m
 
+isZero p@(Polynomial s) = ((length s) == 0) || ((isCon p) && ((monoCoeff $ L.head $ S.toList s) == 0))
+
 isPos :: Polynomial -> Bool
 isPos (Polynomial monos) = L.all (\m -> (monoCoeff m) > 0 && (evenPowers m)) monos
 
@@ -266,10 +268,12 @@ reduceState :: (Monomial -> Monomial -> Ordering) ->
                Maybe DivState
 reduceState monomialOrder (DivState r [] []) =
   Nothing
-reduceState monomialOrder (DivState r (a:as) (f:fs)) =
-  case monoQuotient (lt monomialOrder f) (lt monomialOrder r) of
-   Just q -> Just $ DivState (minus r (times (mkPoly [q]) f)) ((plus a (mkPoly [q])):as) (f:fs)
-   Nothing -> Nothing
+reduceState monomialOrder ds@(DivState r (a:as) (f:fs)) =
+  if isZero r then Just ds
+  else 
+    case monoQuotient (lt monomialOrder f) (lt monomialOrder r) of
+     Just q -> Just $ DivState (minus r (times (mkPoly [q]) f)) ((plus a (mkPoly [q])):as) (f:fs)
+     Nothing -> Nothing
 
 rDivide :: (Monomial -> Monomial -> Ordering) ->
            DivState ->
@@ -277,7 +281,7 @@ rDivide :: (Monomial -> Monomial -> Ordering) ->
 rDivide monomialOrder ds@(DivState r as fs) =
   case reduceState monomialOrder ds of
    Nothing -> (as, r)
-   Just newDs -> rDivide monomialOrder ds
+   Just newDs -> rDivide monomialOrder newDs
   -- let maybeReducer = findReducer monomialOrder (lt monomialOrder r) fs in
   --  case maybeReducer of
   --   Nothing -> (as, r)
