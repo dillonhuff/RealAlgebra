@@ -35,6 +35,28 @@ main = hspec $ do
       let a = mkMono 5 [("x", 2)]
           b = mkMono 2 [("x", 2)] in
        lexOrder a b `shouldBe` EQ
+
+    it "d^3 > d^2" $ do
+      let a = mkMono 3 [("l", 6), ("d", 3)]
+          b = mkMono 2 [("l", 7), ("d", 2)] in
+       lexOrder a b `shouldBe` GT
+
+    it "2 < d^3" $ do
+      let a = mkMono 3 [("l", 6), ("d", 3)]
+          b = mkMono 2 [] in
+       lexOrder b a `shouldBe` LT
+
+  describe "Multipolynomial division" $ do
+    it "x divides x^2" $ do
+      let x = mkPoly $ [mkMono 1 [("x", 1)]]
+          x2 = mkPoly $ [mkMono 1 [("x", 2)]] in
+       divide lexOrder x2 [x] `shouldBe` ([x], mkCon 0)
+
+    it "x divides 2 * x^2 * y" $ do
+      let x = mkPoly $ [mkMono 1 [("x", 1)]]
+          x2 = mkPoly $ [mkMono 2 [("x", 2), ("y", 1)]] in
+       divide lexOrder x2 [x] `shouldBe` ([mkPoly [mkMono 2 [("x", 1), ("y", 1)] ] ], mkCon 0)
+
   describe "Leading coefficient" $ do
     it "Univariate, one term" $ do
       (lcof "x" $ mkPoly [mkMono 3 [("x", 4)]]) `shouldBe` mkPoly [mkMono 3 []]
@@ -45,9 +67,9 @@ main = hspec $ do
       `shouldBe`
       (mkPoly [mkMono 3 [("z", 2)]])
 
-  describe "List division" $ do
-    it "Example from Holdender" $ do
-      1 `shouldBe` 1
+  -- describe "List division" $ do
+  --   it "Example from Holdender" $ do
+  --     1 `shouldBe` 1
 
   -- describe "Division" $ do
   --   it "Two univariate polynomials" $ do

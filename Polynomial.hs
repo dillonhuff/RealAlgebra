@@ -4,7 +4,7 @@ module Polynomial(Polynomial,
                   deg, tryMonicize,
                   lcof, isPos,
                   deleteLcof,
-                  plus, times,
+                  plus, times, divide,
                   lexOrder) where
 
 import Data.List as L
@@ -21,6 +21,8 @@ mkMono i vars = Monomial i (M.fromList $ L.filter (\(_, c) -> c /= 0) vars)
 
 lexOrderStrings :: [(String, Integer)] -> [(String, Integer)] -> Ordering
 lexOrderStrings [] [] = EQ
+lexOrderStrings [] _ = LT
+lexOrderStrings _ [] = GT
 lexOrderStrings ((a, an):as) ((b, bn):bs) =
   if a == b then
     if an == bn then
@@ -197,41 +199,6 @@ getCon p@(Polynomial m) =
   then 0
   else monoCoeff $ S.findMax m
 
--- intDiv :: Polynomial -> Polynomial -> Maybe Polynomial
--- intDiv p1@(Polynomial m1) p2@(Polynomial m2) =
---   if S.size m1 /= 1 || S.size m2 /= 1
---   then error $ "intDiv: Something Bad " ++ show p1 ++ "\n" ++ show p2
---   else
---     let a = monoCoeff $ S.findMax m1
---         b = monoCoeff $ S.findMax m2 in
---      case rem a b of
---       0 -> Just $ mkPoly [mkMono (div a b) []]
---       _ -> Nothing
-
--- rdivide :: String -> Polynomial -> Polynomial -> Polynomial -> (Polynomial, Polynomial)
--- rdivide var f g q =
---   if f == zero || deg var f < deg var g
---   then (q, f)
---   else
---     case nextRes var f g of
---      Just res ->
---        let c = times (mkPoly [mkMono 1 [(var, deg var f - deg var g)]]) res
---            qn = plus q c
---            fn = minus f (times c g) in
---         rdivide var fn g qn
---      Nothing -> (q, f)
-
--- nextRes var f g =
---     let lcf = lcof var f
---         lcg = lcof var g in
---      case nextVar lcf lcg of
---       Just nextVar -> divideEvenly nextVar lcf lcg
---       Nothing -> intDiv lcf lcg
-
--- derivative :: String -> Polynomial -> Polynomial
--- derivative var (Polynomial ms) =
---   mkPolyS $ S.map (\m -> setMonoDegree var ((monoDegree var m) - 1) $ monomialTimes (monoDegree var m) m) $ S.filter (\m -> monoDegree var m /= 0) ms
-
 isPos :: Polynomial -> Bool
 isPos (Polynomial monos) = L.all (\m -> (monoCoeff m) > 0 && (evenPowers m)) monos
 
@@ -241,3 +208,36 @@ tryMonicize p@(Polynomial m) =
    [Monomial c m] -> mkPoly [mkMonoMap 1 m]
    m -> p
   
+divide :: (Monomial -> Monomial -> Ordering) ->
+          Polynomial ->
+          [Polynomial] ->
+          ([Polynomial], Polynomial)
+divide monomialOrder g fs =
+  let as = replicate (length fs) (mkCon 0) in
+   rDivide monomialOrder (DivState g as fs)
+
+lt :: (Monomial -> Monomial -> Ordering) -> Polynomial -> Monomial
+lt monomialOrder (Polynomial s) = head $ sortBy monomialOrder $ S.toList s
+
+data DivState = DivState Polynomial [Polynomial] [Polynomial]
+                deriving (Eq, Ord, Show)
+
+reduceState :: (Monomial -> Monomial -> Ordering) ->
+               DivState ->
+               Maybe DivState
+reduceState monomialOrder (DivState r as fs) =
+  Nothing
+
+rDivide :: (Monomial -> Monomial -> Ordering) ->
+           DivState ->
+           ([Polynomial], Polynomial)
+rDivide monomialOrder ds@(DivState r as fs) =
+  case reduceState monomialOrder ds of
+   Nothing -> (as, r)
+   Just newDs -> rDivide monomialOrder ds
+  -- let maybeReducer = findReducer monomialOrder (lt monomialOrder r) fs in
+  --  case maybeReducer of
+  --   Nothing -> (as, r)
+  --   _ -> (as, r)
+
+   
