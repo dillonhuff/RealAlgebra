@@ -46,6 +46,10 @@ main = hspec $ do
           b = mkMono 2 [] in
        lexOrder b a `shouldBe` LT
 
+  describe "isZero" $ do
+    it "x^2 is not zero" $ do
+      isZero (mkPoly [mkMono 1 [("x", 2)]]) `shouldBe` False
+
   describe "Monomial division" $ do
     it "2x | 6x is 3" $ do
       monoQuotient (mkMono 2 [("x", 1)]) (mkMono 6 [("x", 1)]) `shouldBe` (Just $ mkMono 3 [])
