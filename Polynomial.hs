@@ -8,6 +8,7 @@ module Polynomial(Polynomial,
                   plus, times, divide,
                   lexOrder) where
 
+import Control.Exception.Base
 import Data.List as L
 import Data.Map as M
 import Data.Maybe as Mb
@@ -222,7 +223,9 @@ divide monomialOrder g fs =
    rDivide monomialOrder (DivState g as fs)
 
 lt :: (Monomial -> Monomial -> Ordering) -> Polynomial -> Monomial
-lt monomialOrder (Polynomial s) = head $ sortBy monomialOrder $ S.toList s
+lt monomialOrder (Polynomial s) =
+  let monos = S.toList s in
+   assert ((length monos) > 0) (head $ sortBy monomialOrder monos)
 
 data DivState = DivState Polynomial [Polynomial] [Polynomial]
                 deriving (Eq, Ord, Show)
@@ -264,25 +267,13 @@ monoQuotient divisor dividend =
     Just varPows -> Just $ mkMono c varPows
     Nothing -> Nothing
 
-reduceState :: (Monomial -> Monomial -> Ordering) ->
-               DivState ->
-               Maybe DivState
-reduceState monomialOrder (DivState r [] []) =
-  Nothing
-reduceState monomialOrder ds@(DivState r (a:as) (f:fs)) =
-  if isZero r then Just ds
-  else 
-    case monoQuotient (lt monomialOrder f) (lt monomialOrder r) of
-     Just q -> Just $ DivState (minus r (times (mkPoly [q]) f)) ((plus a (mkPoly [q])):as) (f:fs)
-     Nothing -> Nothing
-
 type MonomialOrder = Monomial -> Monomial -> Ordering
 
 dropUnreducible :: MonomialOrder -> DivState -> [Polynomial]
 dropUnreducible monomialOrder (DivState r as fs) =
   if isZero r then []
   else 
-    dropWhile (\f -> ((monoQuotient (lt monomialOrder f) (lt monomialOrder r)) ) == Nothing) fs
+    takeWhile (\f -> ((monoQuotient (lt monomialOrder f) (lt monomialOrder r)) ) == Nothing) fs
 
 rDivide :: (Monomial -> Monomial -> Ordering) ->
            DivState ->
