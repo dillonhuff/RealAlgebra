@@ -71,4 +71,17 @@ main = hspec $ do
           x2 = mkPoly $ [mkMono 2 [("x", 2), ("y", 1)]] in
        divide lexOrder x2 [x] `shouldBe` ([mkPoly [mkMono 2 [("x", 1), ("y", 1)] ] ], mkCon 0)
 
+    it "x + y divided by [x, x + y] is ([1, 0], y)" $ do
+      let xpy = mkPoly [mkMono 1 [("x", 1)], mkMono 1 [("y", 1)]]
+          x = mkPoly [mkMono 1 [("x", 1)]]
+          y = mkPoly [mkMono 1 [("y", 1)]] in
+       divide revLexOrder xpy [x, xpy] `shouldBe` ([mkCon 1, mkCon 0], y)
+
+    it "x + y divided by [x + y, 0] is ([1, 0], 0)" $ do
+      let xpy = mkPoly [mkMono 1 [("x", 1)], mkMono 1 [("y", 1)]]
+          x = mkPoly [mkMono 1 [("x", 1)]]
+          y = mkPoly [mkMono 1 [("y", 1)]] in
+       divide revLexOrder xpy [xpy, x] `shouldBe` ([mkCon 1, mkCon 0], mkCon 0)
+      
+
 -- TODO: Add some randomized tests with QuickCheck

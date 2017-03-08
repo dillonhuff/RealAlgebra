@@ -6,7 +6,7 @@ module Polynomial(Polynomial,
                   lcof, isPos,
                   deleteLcof, monoQuotient,
                   plus, times, divide,
-                  lexOrder) where
+                  lexOrder, revLexOrder) where
 
 import Control.Exception.Base
 import Data.List as L
@@ -37,6 +37,12 @@ lexOrder :: Monomial -> Monomial -> Ordering
 lexOrder (Monomial _ a) (Monomial _ b) =
   let aVals = sortBy (\(a, _) (b, _) -> compare a b) $ M.toList a
       bVals = sortBy (\(a, _) (b, _) -> compare a b) $ M.toList b in
+   lexOrderStrings aVals bVals
+
+revLexOrder :: Monomial -> Monomial -> Ordering
+revLexOrder (Monomial _ a) (Monomial _ b) =
+  let aVals = sortBy (\(a, _) (b, _) -> compare b a) $ M.toList a
+      bVals = sortBy (\(a, _) (b, _) -> compare b a) $ M.toList b in
    lexOrderStrings aVals bVals
 
 mkMonoMap i vars = Monomial i (M.filter (\c -> c /= 0) vars)
