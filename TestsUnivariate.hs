@@ -11,7 +11,7 @@ main = hspec $ do
     it "x^3 has degree 3" $ do
       (degree $ mkPoly [mkMono 1 3]) `shouldBe` 3
 
-    it "x^1 + 3x^3 + 3*x^1" $ do
+    it "x^1 + 3x^3 + 3*x^1 is 4x^1 + 3x^3" $ do
       let correct = mkPoly [mkMono 4 1, mkMono 3 3]
           result = mkPoly [mkMono 1 1, mkMono 3 3, mkMono 3 1] in
        result `shouldBe` correct
