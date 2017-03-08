@@ -1,6 +1,7 @@
 module Univariate(Monomial,
                   Polynomial,
-                  mkMono, mkPoly) where
+                  mkMono, mkPoly,
+                  degree, plus, minus) where
 
 import Data.List as L
 
@@ -15,6 +16,9 @@ mkMono r i = Monomial r i
 
 monoDegree (Monomial r i) = i
 
+isZeroMonomial (Monomial r _) = r == 0
+isNonZeroMonomial (Monomial r _) = r /= 0
+
 data Polynomial = Polynomial [Monomial] deriving (Eq, Ord)
 
 instance Show Polynomial where
@@ -23,7 +27,7 @@ instance Show Polynomial where
     then "0"
     else sumList "+" mList
   
-mkPoly monoList = Polynomial $ sumDegrees $ sortBy (\a b -> compare (monoDegree a) (monoDegree b)) monoList
+mkPoly monoList = Polynomial $ filter isNonZeroMonomial $  sumDegrees $ sortBy (\a b -> compare (monoDegree a) (monoDegree b)) monoList
 
 degree (Polynomial []) = 0
 degree (Polynomial monos) = monoDegree $ head $ sortBy (\a b -> compare (monoDegree a) (monoDegree b)) monos
@@ -36,3 +40,10 @@ sumDegrees sortedMonos =
   let g = groupBy (\a b -> (monoDegree a) == (monoDegree b)) sortedMonos
       summed = map sumMonosDegree g in
    summed
+
+scalarTimes c (Polynomial a) = mkPoly $ L.map (\(Monomial r i) -> mkMono (c*r) i) a
+
+plus (Polynomial a) (Polynomial b) = mkPoly (a ++ b)
+
+minus a b =
+  plus a (scalarTimes (-1) b)
