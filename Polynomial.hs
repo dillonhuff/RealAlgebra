@@ -1,5 +1,5 @@
 module Polynomial(Polynomial,
-                  Monomial,
+                  Monomial, MonomialOrder,
                   mkCon, mkPoly, mkMono, one, zero,
                   isCon, getCon, isZero,
                   deg, tryMonicize,
