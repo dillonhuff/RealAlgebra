@@ -3,9 +3,9 @@ module Polynomial(Polynomial,
                   mkCon, mkPoly, mkMono, one, zero,
                   isCon, getCon, isZero,
                   deg, tryMonicize,
-                  lcof, isPos,
+                  lcof, isPos, lt, monoLCM,
                   deleteLcof, monoQuotient,
-                  plus, times, divide,
+                  plus, minus, times, divide,
                   lexOrder, revLexOrder) where
 
 import Control.Exception.Base
@@ -53,6 +53,15 @@ evenPowers (Monomial _ m) = L.all (\(_, i) -> even i) $ M.toList m
 
 vars :: Monomial -> Set String
 vars (Monomial _ vs) = M.keysSet vs
+
+monoLCM :: Monomial -> Monomial -> Monomial
+monoLCM a b =
+  let ac = monoCoeff a
+      bc = monoCoeff b
+      c = ac*bc
+      varPows = maxPowers a b in
+   mkMono c varPows
+  
 
 monomialTimes :: Rational -> Monomial -> Monomial
 monomialTimes i (Monomial c ms) = mkMonoMap (i*c) ms
@@ -213,6 +222,21 @@ quotientPowers :: Monomial -> Monomial -> Maybe [(String, Integer)]
 quotientPowers divisor dividend =
   let allVars = S.toList $ S.union (vars divisor) (vars dividend) in
    L.foldr (appendNextVar divisor dividend) (Just []) allVars
+
+appendMaxVar :: Monomial ->
+                 Monomial ->
+                 String ->
+                 [(String, Integer)] ->
+                 [(String, Integer)]
+appendMaxVar divisor dividend var varList =
+  let aDeg = monoDegree var divisor
+      bDeg = monoDegree var dividend in
+   (var, max bDeg aDeg):varList
+
+maxPowers :: Monomial -> Monomial -> [(String, Integer)]
+maxPowers a b =
+  let allVars = S.toList $ S.union (vars a) (vars b) in
+   L.foldr (appendMaxVar a b) [] allVars
 
 monoQuotient :: Monomial -> Monomial -> Maybe Monomial
 monoQuotient divisor dividend =
