@@ -68,16 +68,42 @@ signAt :: Polynomial -> Interval -> SignTable -> Sign
 signAt p i st@(SignTable ps its sgs) =
   let pInd = fromJust $ elemIndex p ps
       iInd = fromJust $ elemIndex i its in
-   error $ show $ st--(sgs !! iInd) !! pInd
-  
+   (sgs !! iInd) !! pInd
+
+setValue :: Int -> Int -> a -> [[a]] -> [[a]]
+setValue col row newVal old = old
+
+setSignAt :: Polynomial -> Interval -> Sign -> SignTable -> SignTable
+setSignAt p i sgn st@(SignTable ps its sgs) =
+  let pInd = fromJust $ elemIndex p ps
+      iInd = fromJust $ elemIndex i its in
+   SignTable ps its $ setValue pInd iInd sgn sgs
+   
 splitInterval :: Polynomial -> Interval -> SignTable -> SignTable
 splitInterval p (Point _) st = st
 splitInterval p (Range x0 x1) st =
   if rootBetween (signAt p (Point x0) st) (signAt p (Point x1) st) then st else st
 
+setPosInf p pd st =
+  if (signAt pd (Point Inf) st) == Pos
+     then setSignAt p (Point Inf) Pos st
+  else setSignAt p (Point Inf) Neg st
+
+setNegInf p pd st =
+  if (signAt pd (Point NInf) st) == Pos
+     then setSignAt p (Point NInf) Neg st
+  else setSignAt p (Point NInf) Pos st
+
+insertInfinityPoints :: Polynomial -> Polynomial -> SignTable -> SignTable
+insertInfinityPoints p pd st@(SignTable polys ints signs) =
+  let atNegInfRow = head $ signs
+      atPosInfRow = head $ reverse signs in
+   setPosInf p pd $ setNegInf p pd $ SignTable polys ([Point NInf] ++ ints ++ [Point Inf]) ([atNegInfRow] ++ signs ++ [atPosInfRow])
+
 splitIntervals :: Polynomial -> Polynomial -> SignTable -> SignTable
-splitIntervals p pd st =
-  L.foldr (splitInterval p) st (intervals st)
+splitIntervals p pd stInit =
+  let st = insertInfinityPoints p pd stInit in
+   L.foldr (splitInterval p) st (intervals st)
 
 inferCol p ps rs pTable rTable =
   let signs = L.replicate (numRows pTable) Neg in --colSigns p ps rs pTable rTable in
