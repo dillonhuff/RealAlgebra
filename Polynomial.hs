@@ -2,7 +2,7 @@ module Polynomial(Polynomial,
                   Monomial, MonomialOrder,
                   mkCon, mkPoly, mkMono, one, zero,
                   isCon, getCon, isZero,
-                  deg, tryMonicize,
+                  deg, tryMonicize, derivative,
                   lcof, isPos, lt, monoLCM,
                   deleteLcof, monoQuotient,
                   plus, minus, times, divide,
@@ -150,6 +150,23 @@ simplify ms =
       mPlus = (\(Monomial c1 m1) (Monomial c2 _) -> Monomial (c1 + c2) m1)
       results = L.map (\terms -> L.foldr mPlus (L.head terms) (L.tail terms)) grouped in
    results
+
+setMonoPower :: String -> Integer -> Monomial -> Monomial
+setMonoPower s i (Monomial c ms) = Monomial c $ M.insert s i ms
+
+monoPower :: String -> Monomial -> Integer
+monoPower s (Monomial c ms) = ms ! s
+
+monoDerivative :: String -> Monomial -> Monomial
+monoDerivative var mono@(Monomial c ms) =
+  if S.member var $ vars mono then
+    let newM = mkMono ((monoCoeff mono)*(toRational $ monoPower var mono)) $ M.toList ms in
+     setMonoPower var ((monoPower var mono) - 1) newM
+  else mkMono 0 []
+  
+  
+derivative :: String -> Polynomial -> Polynomial
+derivative var (Polynomial ps) = mkPoly $ L.map (monoDerivative var) $ S.toList ps
 
 pow :: Polynomial -> Integer -> Polynomial
 pow p 0 = one

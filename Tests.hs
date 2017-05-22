@@ -86,7 +86,7 @@ main = hspec $ do
 
   describe "Sign table tests" $ do
     it "Table for 3 table" $ do
-      let tbl = mkTable [mkPoly $ [mkMono 3 []]] in
+      let tbl = mkTable [mkCon 3] in
        (numRows tbl) `shouldBe` 1
 
     it "Table for 3 and 4, # cols should be 2" $ do
