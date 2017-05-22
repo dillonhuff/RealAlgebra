@@ -3,6 +3,7 @@ module SignTable(SignTable,
                  numRows, numCols) where
 
 import Data.List as L
+import Data.Maybe
 
 import Polynomial
 
@@ -18,9 +19,17 @@ data SignTable = SignTable [Polynomial] [Interval] [[Sign]] deriving (Eq, Ord, S
 
 tablePolys (SignTable ps _ _) = ps
 
+deleteN :: Int -> [a] -> [a]
+deleteN _ []     = []
+deleteN i (a:as)
+   | i == 0    = as
+   | otherwise = a : deleteN (i-1) as
+
 deleteColumn :: Polynomial -> SignTable -> SignTable
-deleteColumn p st =
-  st
+deleteColumn p (SignTable ps is signRows) =
+  let pInd = fromJust $ elemIndex p ps
+      newRows = L.map (deleteN pInd) signRows in
+   SignTable ps is newRows
 
 deleteColumns :: [Polynomial] -> SignTable -> SignTable
 deleteColumns ps table =
@@ -43,7 +52,12 @@ constantRows ps = [L.map univariateSign ps]
 constantSignTable polys =
   SignTable polys [Range NInf Inf] $ constantRows polys
 
-inferTableFor p ps rs pTable rTable = SignTable [p] [] []
+insertRow p ps rs pTable rTable =
+  error $ show pTable
+
+inferTableFor p ps rs pTable rTable =
+  let newSt = insertRow p ps rs pTable rTable in
+   newSt
 
 splitSignTable toExtract table =
   (deleteColumns toExtract table,
