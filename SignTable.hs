@@ -30,7 +30,7 @@ deleteColumn :: Polynomial -> SignTable -> SignTable
 deleteColumn p (SignTable ps is signRows) =
   let pInd = fromJust $ elemIndex p ps
       newRows = L.map (deleteN pInd) signRows in
-   SignTable ps is newRows
+   SignTable (deleteN pInd ps) is newRows
 
 deleteColumns :: [Polynomial] -> SignTable -> SignTable
 deleteColumns ps table =
