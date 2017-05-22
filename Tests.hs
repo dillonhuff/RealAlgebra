@@ -3,6 +3,7 @@ module Tests(main) where
 import Test.Hspec
 
 import Polynomial
+import SignTable
 
 main :: IO ()
 main = hspec $ do
@@ -82,6 +83,18 @@ main = hspec $ do
           x = mkPoly [mkMono 1 [("x", 1)]]
           y = mkPoly [mkMono 1 [("y", 1)]] in
        divide revLexOrder xpy [xpy, x] `shouldBe` ([mkCon 1, mkCon 0], mkCon 0)
-      
+
+  describe "Sign table tests" $ do
+    it "Table for 3 table" $ do
+      let tbl = mkTable [mkPoly $ [mkMono 3 []]] in
+       (numRows tbl) `shouldBe` 1
+
+    it "Table for 3 and 4, # cols should be 2" $ do
+      let tbl = mkTable [mkCon 3, mkCon 2] in
+       (numCols tbl) `shouldBe` 2
+
+    it "Table for -3x + 1" $ do
+      let tbl = mkTable [ mkPoly $ [mkMono 3 [("x", 1)]] ] in
+       (numRows tbl) `shouldBe` 3
 
 -- TODO: Add some randomized tests with QuickCheck
