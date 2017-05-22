@@ -218,6 +218,7 @@ divide monomialOrder g fs =
 lt :: (Monomial -> Monomial -> Ordering) -> Polynomial -> Monomial
 lt monomialOrder (Polynomial s) =
   let monos = S.toList s in
+  --if (length monos) > 0 then (head $ sortBy monomialOrder monos) else mkMono 0 []
    assert ((length monos) > 0) (head $ sortBy monomialOrder monos)
 
 data DivState = DivState Polynomial [Polynomial] [Polynomial]

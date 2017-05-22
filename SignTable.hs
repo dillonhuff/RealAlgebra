@@ -2,6 +2,7 @@ module SignTable(SignTable,
                  mkTable,
                  numRows, numCols) where
 
+import Control.Exception.Base
 import Data.List as L
 import Data.Maybe
 
@@ -67,7 +68,7 @@ splitSignTable toExtract table =
 -- case
 recursiveSignTable polys =
   let degPolys = sortBy (\p q -> compare (deg "x" p) (deg "x" q)) polys
-      p = head degPolys
+      p = assert (not $ isCon $ head degPolys) (head degPolys)
       ps = (derivative "x" p):(tail degPolys)
       rs = map (\pi -> snd $ divide lexOrder p [pi]) ps
 
