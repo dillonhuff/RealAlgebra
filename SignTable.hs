@@ -12,7 +12,14 @@ data Interval =
   Point Val |
   Range Val Val deriving (Eq, Ord, Show)
 
-data SignTable = SignTable [Polynomial] [Interval] deriving (Eq, Ord, Show)
+data Sign = Neg | Zero | Pos deriving (Eq, Ord, Show)
+
+data SignTable = SignTable [Polynomial] [Interval] [[Sign]] deriving (Eq, Ord, Show)
+
+tablePolys (SignTable ps _ _) = ps
+
+deleteColumns :: [Polynomial] -> SignTable -> SignTable
+deleteColumns ps table = table
 
 mkTable polys =
   if all (\p -> isCon p) polys
@@ -20,13 +27,14 @@ mkTable polys =
   else recursiveSignTable polys
 
 constantSignTable polys =
-  SignTable polys [Range NInf Inf]
+  SignTable polys [Range NInf Inf] []
 
-inferTableFor p ps rs pTable rTable = SignTable [p] []
+inferTableFor p ps rs pTable rTable = SignTable [p] [] []
 
-splitSignTable toExtract table = (table, table)
+splitSignTable toExtract table =
+  (deleteColumns toExtract table,
+   deleteColumns ((tablePolys table) \\ toExtract) table)
   
-
 -- Note: Assumes x is the only variable since for now we are doing the univariate
 -- case
 recursiveSignTable polys =
@@ -39,7 +47,7 @@ recursiveSignTable polys =
       (pTable, rTable) = splitSignTable rs nextS in
    inferTableFor p ps rs pTable rTable
 
-numRows (SignTable _ intervals) = length intervals
-numCols (SignTable polys _) = length polys
+numRows (SignTable _ intervals _) = length intervals
+numCols (SignTable polys _ _) = length polys
 
 

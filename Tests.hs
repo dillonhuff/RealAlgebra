@@ -12,7 +12,7 @@ main = hspec $ do
       derivative "x" (mkCon 3) `shouldBe` (mkCon 0)
 
   it "derivative of 3x^3 wrt x should be 9x^2" $ do
-      (derivative "x" $ mkPoly [mkMono 3 [("x", 3)]]) `shouldBe` (mkPoly [mkMono 2 [("x", 2)]])
+      (derivative "x" $ mkPoly [mkMono 3 [("x", 3)]]) `shouldBe` (mkPoly [mkMono 9 [("x", 2)]])
     
   describe "Polynomial addition" $ do
 
