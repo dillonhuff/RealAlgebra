@@ -53,11 +53,15 @@ constantRows ps = [L.map univariateSign ps]
 constantSignTable polys =
   SignTable polys [Range NInf Inf] $ constantRows polys
 
-insertRow p ps rs pTable rTable =
-  error $ show pTable
+insertCol p signs (SignTable ps intervals rows) =
+  SignTable (ps ++ [p]) intervals (L.zipWith (\row sign -> row ++ [sign]) rows signs)
+
+inferCol p ps rs pTable rTable =
+  let signs = L.replicate (numRows pTable) Neg in --colSigns p ps rs pTable rTable in
+   insertCol p signs pTable
 
 inferTableFor p ps rs pTable rTable =
-  let newSt = insertRow p ps rs pTable rTable in
+  let newSt = inferCol p ps rs pTable rTable in
    newSt
 
 splitSignTable toExtract table =
