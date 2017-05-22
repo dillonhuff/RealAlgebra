@@ -150,7 +150,7 @@ splitSignTable toExtract table =
 -- Note: Assumes x is the only variable since for now we are doing the univariate
 -- case
 recursiveSignTable polys =
-  let degPolys = sortBy (\p q -> compare (deg "x" p) (deg "x" q)) polys
+  let degPolys = reverse $ sortBy (\p q -> compare (deg "x" p) (deg "x" q)) polys
       p = assert (not $ isCon $ head degPolys) (head degPolys)
       ps = (derivative "x" p):(tail degPolys)
       rs = map (\pi -> snd $ divide lexOrder p [pi]) ps

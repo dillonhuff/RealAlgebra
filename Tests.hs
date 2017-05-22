@@ -100,8 +100,12 @@ main = hspec $ do
       let tbl = mkTable [mkCon 3, mkCon 2] in
        (numCols tbl) `shouldBe` 2
 
-    it "Table for -3x + 1" $ do
+    it "Table for -3x should have 3 rows" $ do
       let tbl = mkTable [ mkPoly $ [mkMono (-3) [("x", 1)]] ] in
        (numRows tbl) `shouldBe` 3
+
+    it "Table for -3x + 1 should have 1 column" $ do
+      let tbl = mkTable [ mkPoly $ [mkMono (-3) [("x", 1)], mkMono (1) []] ] in
+       (numCols tbl) `shouldBe` 1
 
 -- TODO: Add some randomized tests with QuickCheck
