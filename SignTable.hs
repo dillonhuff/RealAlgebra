@@ -22,14 +22,22 @@ mkTable polys =
 constantSignTable polys =
   SignTable polys [Range NInf Inf]
 
+inferTableFor p ps rs pTable rTable = SignTable [p] []
+
+splitSignTable toExtract table = (table, table)
+  
+
 -- Note: Assumes x is the only variable since for now we are doing the univariate
 -- case
 recursiveSignTable polys =
   let degPolys = sortBy (\p q -> compare (deg "x" p) (deg "x" q)) polys
       p = head degPolys
       ps = (derivative "x" p):(tail degPolys)
-      rs = map (\pi -> snd $ divide lexOrder p [pi]) ps in
-   SignTable polys []
+      rs = map (\pi -> snd $ divide lexOrder p [pi]) ps
+
+      nextS = mkTable (ps ++ rs) -- Recursively build new sign table
+      (pTable, rTable) = splitSignTable rs nextS in
+   inferTableFor p ps rs pTable rTable
 
 numRows (SignTable _ intervals) = length intervals
 numCols (SignTable polys _) = length polys
