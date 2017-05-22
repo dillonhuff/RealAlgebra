@@ -2,7 +2,7 @@ module SignTable(SignTable,
                  mkTable,
                  numRows, numCols) where
 
-import Data.List
+import Data.List as L
 
 import Polynomial
 
@@ -18,16 +18,30 @@ data SignTable = SignTable [Polynomial] [Interval] [[Sign]] deriving (Eq, Ord, S
 
 tablePolys (SignTable ps _ _) = ps
 
+deleteColumn :: Polynomial -> SignTable -> SignTable
+deleteColumn p st =
+  st
+
 deleteColumns :: [Polynomial] -> SignTable -> SignTable
-deleteColumns ps table = table
+deleteColumns ps table =
+  L.foldr deleteColumn table ps
 
 mkTable polys =
   if all (\p -> isCon p) polys
      then constantSignTable polys
   else recursiveSignTable polys
 
+univariateSign :: Polynomial -> Sign
+univariateSign p = if (getCon p) > 0 then Pos else if (getCon p) < 0 then Neg else Zero
+
+signList :: Int -> Polynomial -> [Sign]
+signList i p = replicate i (univariateSign p)
+
+constantRows :: [Polynomial] -> [[Sign]]
+constantRows ps = [L.map univariateSign ps]
+
 constantSignTable polys =
-  SignTable polys [Range NInf Inf] []
+  SignTable polys [Range NInf Inf] $ constantRows polys
 
 inferTableFor p ps rs pTable rTable = SignTable [p] [] []
 
