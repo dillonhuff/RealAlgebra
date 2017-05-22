@@ -18,6 +18,8 @@ data Sign = Neg | Zero | Pos deriving (Eq, Ord, Show)
 
 data SignTable = SignTable [Polynomial] [Interval] [[Sign]] deriving (Eq, Ord, Show)
 
+intervals (SignTable _ its _) = its
+
 tablePolys (SignTable ps _ _) = ps
 
 deleteN :: Int -> [a] -> [a]
@@ -42,7 +44,8 @@ mkTable polys =
   else recursiveSignTable polys
 
 univariateSign :: Polynomial -> Sign
-univariateSign p = if (getCon p) > 0 then Pos else if (getCon p) < 0 then Neg else Zero
+univariateSign p =
+  if (getCon p) > 0 then Pos else if (getCon p) < 0 then Neg else Zero
 
 signList :: Int -> Polynomial -> [Sign]
 signList i p = replicate i (univariateSign p)
@@ -56,9 +59,29 @@ constantSignTable polys =
 insertCol p signs (SignTable ps intervals rows) =
   SignTable (ps ++ [p]) intervals (L.zipWith (\row sign -> row ++ [sign]) rows signs)
 
+rootBetween :: Sign -> Sign -> Bool
+rootBetween Pos Neg = True
+rootBetween Neg Pos = True
+rootBetween _ _ = False
+
+signAt :: Polynomial -> Interval -> SignTable -> Sign
+signAt p i st@(SignTable ps its sgs) =
+  let pInd = fromJust $ elemIndex p ps
+      iInd = fromJust $ elemIndex i its in
+   error $ show $ st--(sgs !! iInd) !! pInd
+  
+splitInterval :: Polynomial -> Interval -> SignTable -> SignTable
+splitInterval p (Point _) st = st
+splitInterval p (Range x0 x1) st =
+  if rootBetween (signAt p (Point x0) st) (signAt p (Point x1) st) then st else st
+
+splitIntervals :: Polynomial -> Polynomial -> SignTable -> SignTable
+splitIntervals p pd st =
+  L.foldr (splitInterval p) st (intervals st)
+
 inferCol p ps rs pTable rTable =
   let signs = L.replicate (numRows pTable) Neg in --colSigns p ps rs pTable rTable in
-   insertCol p signs pTable
+   splitIntervals p (head ps) $ insertCol p signs pTable
 
 inferTableFor p ps rs pTable rTable =
   let newSt = inferCol p ps rs pTable rTable in
@@ -82,5 +105,3 @@ recursiveSignTable polys =
 
 numRows (SignTable _ intervals _) = length intervals
 numCols (SignTable polys _ _) = length polys
-
-
