@@ -152,7 +152,9 @@ simplify ms =
    results
 
 setMonoPower :: String -> Integer -> Monomial -> Monomial
-setMonoPower s i (Monomial c ms) = Monomial c $ M.insert s i ms
+setMonoPower s i (Monomial c ms) =
+  if i == 0 then Monomial c $ M.delete s ms
+  else Monomial c $ M.insert s i ms
 
 monoPower :: String -> Monomial -> Integer
 monoPower s (Monomial c ms) = ms ! s
@@ -216,10 +218,10 @@ divide monomialOrder g fs =
    rDivide monomialOrder (DivState g as fs)
 
 lt :: (Monomial -> Monomial -> Ordering) -> Polynomial -> Monomial
-lt monomialOrder (Polynomial s) =
+lt monomialOrder pl@(Polynomial s) =
   let monos = S.toList s in
   --if (length monos) > 0 then (head $ sortBy monomialOrder monos) else mkMono 0 []
-   assert ((length monos) > 0) (head $ sortBy monomialOrder monos)
+   assert (not $ isZero pl) (head $ sortBy monomialOrder monos)
 
 data DivState = DivState Polynomial [Polynomial] [Polynomial]
                 deriving (Eq, Ord, Show)
@@ -285,7 +287,7 @@ rDivide monomialOrder ds@(DivState r as fs) =
    Just i ->
      let ak = head $ drop i as
          fk = head $ drop i fs
-         q = fromJust $ monoQuotient (lt monomialOrder fk) (lt monomialOrder r)
+         q = fromJust $ monoQuotient (assert (not $ isZero fk) (lt monomialOrder fk)) (assert (not $ isZero r) (lt monomialOrder r))
          newA = plus ak (mkPoly [q])
          newR = minus r (times (mkPoly [q]) fk)
          lastA = drop (i + 1) as
